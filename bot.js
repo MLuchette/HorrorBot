@@ -14,11 +14,16 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
+    //If bot sent the message or doesn't start with '!', ignore
     if (!_.startsWith(message.content, prefix) || message.author.bot){ return; }
 
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
     
+    //If command undefined, ignore
+    if (!client.commands.has(command)) { return };
+
+    //Found the commant, so run it
     client.commands.get(command).execute(message, args);
 });
 
