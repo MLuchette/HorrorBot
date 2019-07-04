@@ -34,11 +34,9 @@ class HorrorBot {
         }
         
         if (searchTerms.length === 1) {
-            query.searchValue = _.first(searchTerms); //Only 1 arg, probably
-        } else if (searchTerms.length > 1) {
+            query.searchValue = _.first(searchTerms);
+        } else {
             query.searchValue = searchTerms.join(' ');
-        } else if (_.some(searchTerms, _.isNumber)) {
-            //
         }
 
         query.searchValue = _.toLower(query.searchValue);
