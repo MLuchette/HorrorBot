@@ -1,21 +1,25 @@
 const _ = require('lodash');
 const Discord = require('discord.js');
-const client = new Discord.Client();
 const auth = require('./auth.json');
-const HorrorBot = require('./HorrorBot.js');
-let horrorBot = {};
+const cardQuery = require('./cardQuery.js');
+const client = new Discord.Client();
+const prefix = '!';
+
+client.commands =  new Discord.Collection();
+
+client.commands.set(cardQuery.name, cardQuery);
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
-    horrorBot = new HorrorBot();
 });
 
-client.on('message', msg => {
-    if (!message.content.startsWith(prefix) || message.author.bot){ return; }
+client.on('message', message => {
+    if (!_.startsWith(message.content, prefix) || message.author.bot){ return; }
 
-    if (_.includes(msg.content, '!card')) {
-        msg.reply(horrorBot.respondWithCard(msg.content));
-    }
+    const args = message.content.slice(prefix.length).split(/ +/);
+    const command = args.shift().toLowerCase();
+    
+    client.commands.get(command).execute(message, args);
 });
 
 client.login(auth.token);

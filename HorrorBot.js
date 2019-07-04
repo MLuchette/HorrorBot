@@ -2,7 +2,7 @@ const _ = require('lodash');
 const arkhamCards = require('./arkhamCardList.json');
 const arkhamBaseURL = 'https://arkhamdb.com';
 
-module.exports = class HorrorBot {
+class HorrorBot {
     constructor () {
         this.allCards = arkhamCards;
     }
@@ -26,13 +26,9 @@ module.exports = class HorrorBot {
             return arkhamBaseURL + card.imagesrc;
         }
     }
-    getQueryFromMessage (fullMessage) {
-        let parsed = _.words(fullMessage);
-        let command = parsed[0];
-        let query = parsed[1];
-        return _.toLower(query);
-    }
-    respondWithCard(fullMessage) {
-        return this.getCardImage(this.getQueryFromMessage(fullMessage));
+    respondWithCard(cardQuery, options) {
+        return this.getCardImage(cardQuery, options);
     }
 }
+
+module.exports = new HorrorBot();
