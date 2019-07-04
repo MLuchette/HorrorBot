@@ -28,10 +28,14 @@ class HorrorBot {
             searchValue : '',
             cardLevel : 0
         };
+
+        if (this.isModifier(searchTerms[0])) {
+            query.cardLevel = parseInt(searchTerms.shift(), 10) || '+';
+        }
         
         if (searchTerms.length === 1) {
             query.searchValue = _.first(searchTerms); //Only 1 arg, probably
-        } else if (searchTerms.length > 1 && !_.some(searchTerms, _.isNumber)) {
+        } else if (searchTerms.length > 1) {
             query.searchValue = searchTerms.join(' ');
         } else if (_.some(searchTerms, _.isNumber)) {
             //
@@ -41,8 +45,11 @@ class HorrorBot {
 
         return query;
     }
+    isModifier (string) {
+        return string === '+' || (string.length === 1 && !_.isNaN(parseInt(string, 10)));
+    }
     searchForCard (query) {
-        let queryResult = this.queryCards(query.searchValue);
+        let queryResult = this.queryCards(query.searchValue, query.cardLevel);
         if (queryResult.card) {
             return queryResult.card;
         } else if (queryResult.multipleMatches) {
@@ -50,10 +57,19 @@ class HorrorBot {
         }
         return queryResult;
     }
-    queryCards (userSearch) {
+    queryCards (userSearch, cardLevel) {
         let queryResult = {
             matches : []
         };
+        let isUpgrade = cardLevel === '+';
+
+        function matchesXP (card) {
+            if (isUpgrade) {
+                return card.xp > 0;
+            } else {
+                return card.xp === cardLevel;
+            }
+        }
 
         if (_.has(this.secrets, userSearch)) {
             queryResult.card = this.secrets[userSearch];
@@ -61,15 +77,21 @@ class HorrorBot {
         }
         
         _.forEach(this.allCards, function (card) {
-            if (card.name === userSearch || card.subname === userSearch) {
+            if ((card.name === userSearch || card.subname === userSearch) && matchesXP(card)) {
                 queryResult.card = card;
                 return false; //We found it, stop
-            } else if (_.includes(card.name, userSearch) || _.includes(card.subname, userSearch)) {
-                queryResult.matches.push(card);
+            } else {
+                let matchesString = _.includes(card.name, userSearch) || _.includes(card.subname, userSearch);
+                if (matchesString && matchesXP(card)) {
+                    queryResult.card = card;
+                    return false;
+                } else if (matchesString) {
+                    queryResult.matches.push(card);
+                }
             }
         });
 
-        if (queryResult.matches.length === 1) {
+        if (queryResult.card == null && queryResult.matches.length === 1) {
             queryResult.card = _.first(queryResult.matches);
         } else if (queryResult.matches.length > 1) {
             queryResult.multipleMatches = true;
