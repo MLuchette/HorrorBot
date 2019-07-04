@@ -12,11 +12,53 @@ class HorrorBot {
             }
             return collection;
         }, []);
+        this.secrets = {
+            pawterson : {
+                imagesrc : '/bundles/cards/03114.jpg'
+            }
+        };
+    }
+    respondWithCard (searchTerms) {
+        let query = this.buildQuery(searchTerms);
+        let card = this.searchForCard(query);
+        return this.getCardImage(card);
+    }
+    buildQuery (searchTerms) {
+        let query = {
+            searchValue : '',
+            cardLevel : 0
+        };
+        
+        if (searchTerms.length === 1) {
+            query.searchValue = _.first(searchTerms); //Only 1 arg, probably
+        } else if (searchTerms.length > 1 && !_.some(searchTerms, _.isNumber)) {
+            query.searchValue = searchTerms.join(' ');
+        } else if (_.some(searchTerms, _.isNumber)) {
+            //
+        }
+
+        query.searchValue = _.toLower(query.searchValue);
+
+        return query;
+    }
+    searchForCard (query) {
+        let queryResult = this.queryCards(query.searchValue);
+        if (queryResult.card) {
+            return queryResult.card;
+        } else if (queryResult.multipleMatches) {
+            return _.first(queryResult.matches); //todo try harder
+        }
+        return queryResult;
     }
     queryCards (userSearch) {
         let queryResult = {
             matches : []
         };
+
+        if (_.has(this.secrets, userSearch)) {
+            queryResult.card = this.secrets[userSearch];
+            return queryResult;
+        }
         
         _.forEach(this.allCards, function (card) {
             if (card.name === userSearch || card.subname === userSearch) {
@@ -39,40 +81,12 @@ class HorrorBot {
         return queryResult;
 
     }
-    searchForCard (query) {
-        let queryResult = this.queryCards(query.searchValue);
-        if (queryResult.card) {
-            return queryResult.card;
-        } else if (queryResult.multipleMatches) {
-            return _.first(queryResult.matches); //todo try harder
-        }
-        return queryResult;
-    }
     getCardImage (card) {
         if (card.notFound) {
             return card.message;
         } else {
             return arkhamBaseURL + card.imagesrc;
         }
-    }
-    respondWithCard (searchTerms) {
-        let query = this.buildQuery(searchTerms);
-        let card = this.searchForCard(query);
-        return this.getCardImage(card);
-    }
-    buildQuery (searchTerms) {
-        let query = {
-            searchValue : '',
-            cardLevel : 0
-        };
-        
-        if (searchTerms.length === 1) {
-            query.searchValue = _.first(searchTerms); //Only 1 arg, probably
-        } else if (searchTerms.length > 1 && !_.some(searchTerms, _.isNumber)) {
-            query.searchValue = searchTerms.join(' ');
-        }
-
-        return query;
     }
 }
 
