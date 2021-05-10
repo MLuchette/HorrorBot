@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^11.5.1",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.21"
   }
 }
